@@ -160,7 +160,7 @@ def user_input_features(Questionnaire,Comp, slider_strings):
 
 ph = st.empty()
 placeholder = st.empty()
-if not st.checkbox("Commance"):
+if not st.checkbox("Commence"):
     st.empty()
     st.session_state.Quest, st.session_state.Comp, st.session_state.Rep = user_input_values()
 else:
