@@ -87,8 +87,8 @@ def empty():
 
 def write_data(new_data):
 
-    db = client.alphapv
-    db.test.insert_one(new_data)
+    db = client.Questionnaire
+    db.General.insert_one(new_data)
 
 def user_input_values():
     st.write("### Questionnaire:")
@@ -97,13 +97,19 @@ def user_input_values():
     st.write("### Entrez les questions:")
     Comp_input = st.text_area("Questions")
     #st.write(Comp_input)
-    Comp_list = [item.strip() for item in Comp_input.split("\n")]
-    #st.write(Comp_list)
+    Comp_list = [item.strip() for item in Comp_input.split("\n\n")]
+    
+    if(len(Comp_list)==1):
+        Comp_list = [item.strip() for item in Comp_input.split("\n")]
+        loop = 1
+    else:
+        loop = len(Comp_list)
+    #st.write(len(Comp_list))
     #Comp_list = Comp_input.split(",")
     st.write("### Réponses suggérées:")
     Rep_input = st.text_area("Réponses")
     Rep_list = [item.strip() for item in Rep_input.split("\n")]
-    return Quest_input, Comp_list, Rep_list
+    return Quest_input, Comp_list, Rep_list, loop
 
     #st.write("### Enter Slider Values:")
     #slider_values = st.text_area("Slider Values", "Enter each value separated by a space")
@@ -113,7 +119,7 @@ def user_input_values():
     
 
 
-def user_input_features(Questionnaire,Comp, slider_strings):
+def user_input_features(Questionnaire,Comp, slider_strings, loop):
         st.write(f"""
         # {Questionnaire}
         """)
@@ -133,14 +139,32 @@ def user_input_features(Questionnaire,Comp, slider_strings):
         date = st.sidebar.date_input("Date de naissance", datetime.date(2010, 1, 1))
         sex = st.sidebar.selectbox('Sex',('Homme','Femme'))
         #st.write("""## Cet enfant se distingue des autres enfants de son âge de la manière suivante:""")
-        for i, question in enumerate(Comp, start=1):
-            slider_output = st.select_slider(
-            f"{question}",
-            options=slider_values,
-            value=1,
-            format_func=stringify
-            )
-            answers[f"THERM{i}"] = slider_output
+        if (loop == 1):
+            param = Comp[0]
+            Comp = Comp[1:]
+            for i, question in enumerate(Comp, start=1):
+                slider_output = st.select_slider(
+                #f":red[{question}]",
+                f"{question}",
+                options=slider_values,
+                value=1,
+                format_func=stringify
+                )
+                answers[f"{param}{i}"] = slider_output
+        else:
+            for j in range(len(Comp)):
+                Compin = [item.strip() for item in Comp[j].split("\n")]
+                param = Compin[0]
+                Compin = Compin[1:]
+                for i, question in enumerate(Compin, start=1):
+                    slider_output = st.select_slider(
+                    f"{question}",
+                    options=slider_values,
+                    value=1,
+                    format_func=stringify
+                    )
+                    answers[f"{param}{i}"] = slider_output
+
 
 
         user_data = {'Questionnaire': Questionnaire,
@@ -160,20 +184,20 @@ def user_input_features(Questionnaire,Comp, slider_strings):
 
 ph = st.empty()
 placeholder = st.empty()
-if not st.checkbox("Commence"):
+if not st.checkbox("Commance"):
     st.empty()
-    st.session_state.Quest, st.session_state.Comp, st.session_state.Rep = user_input_values()
+    st.session_state.Quest, st.session_state.Comp, st.session_state.Rep, st.session_state.loop = user_input_values()
 else:
     st.empty()
     #st.write("")
-    document = user_input_features(st.session_state.Quest, st.session_state.Comp, st.session_state.Rep)
+    document = user_input_features(st.session_state.Quest, st.session_state.Comp, st.session_state.Rep, st.session_state.loop)
     left_co, cent_co,last_co = st.columns(3)
     with cent_co:
         button = st.button('Enregisterez')
         st.image("clinicogImg.png", width=200)
     if button:
         write_data(document)
-        st.write("Merci d'avoir participé(e) à ce questionnaire")
+        st.write("""# Merci d'avoir participé(e) à ce questionnaire""")
 
 #if not st.button('Continuer'):
 #    Comp = user_input_values()
